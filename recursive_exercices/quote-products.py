@@ -78,8 +78,13 @@ def calculate_taxes(subtotal, taxes, total_taxes):
 
 
 def main():
+    number_of_repetitions = int(input("Chose a number of repetitions for the list quotes_to_calculate:"))
+    number_of_repetitions = 1 if number_of_repetitions == 0 else number_of_repetitions
     results = []
-    results_to_print = iteration_over_user(quotes_to_calculate, results)
-    print(results_to_print)
+    try:
+        results_to_print = iteration_over_user(quotes_to_calculate * number_of_repetitions, results)
+        print(results_to_print)
+    except Exception as ex:
+        print("Error in the main function", str(ex))
 
 main()

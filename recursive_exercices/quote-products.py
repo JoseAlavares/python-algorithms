@@ -1,4 +1,6 @@
 # Exercise to implement recursive functions in python and memoizing
+import time
+start_time = time.time()
 
 TAXES = [{
     "tax_name": "iva",
@@ -51,21 +53,28 @@ quotes_to_calculate = [{
     }]
 }]
 
-def iteration_over_user(quotes_to_calculate, results):
+def iteration_over_user(quotes_to_calculate, results, memo):
     if len(quotes_to_calculate) == 0:
         return results
 
     user = quotes_to_calculate[0]
     total = 0
-    total += calculate_total_per_user(user["products"], total)
+    total += calculate_total_per_user(user["products"], total, memo)
     results.append({"user_id": user["user_id"], "total": total })
-    return iteration_over_user(quotes_to_calculate[1:], results)
+    return iteration_over_user(quotes_to_calculate[1:], results, memo)
 
-def calculate_total_per_user(products, total):
+def calculate_total_per_user(products, total, memo):
     if len(products) == 0:
         return total
+
+    if product := list(filter(lambda product: product["product_name"] == products[0]["product_name"], memo)):
+        # print("si funciona")
+        return product[0]["total"]
+
     products[0]["price_before_taxes"] += calculate_taxes(products[0]["price_before_taxes"], TAXES, 0)
-    total += products[0]["price_before_taxes"] + calculate_total_per_user(products[1:], total)
+    memo.append({ "product_name": products[0]["product_name"], "total": products[0]["price_before_taxes"] })
+    # print(memo)
+    total += products[0]["price_before_taxes"] + calculate_total_per_user(products[1:], total, memo)
     return total
 
 def calculate_taxes(subtotal, taxes, total_taxes):
@@ -81,9 +90,12 @@ def main():
     number_of_repetitions = int(input("Chose a number of repetitions for the list quotes_to_calculate:"))
     number_of_repetitions = 1 if number_of_repetitions == 0 else number_of_repetitions
     results = []
+    memo = []
+
     try:
-        results_to_print = iteration_over_user(quotes_to_calculate * number_of_repetitions, results)
+        results_to_print = iteration_over_user(quotes_to_calculate * number_of_repetitions, results, [])
         print(results_to_print)
+        print("--- %s seconds ---" % (time.time() - start_time))
     except Exception as ex:
         print("Error in the main function", str(ex))
 
